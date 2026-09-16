@@ -1,0 +1,8 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "paths": {
+      "@ariel/ink": ["src/types/ariel-ink.d.ts"]
+    }
+  }
+}

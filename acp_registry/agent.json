@@ -1,0 +1,16 @@
+{
+  "id": "ariel-brain",
+  "name": "Ariel Brain",
+  "version": "0.19.0",
+  "description": "Self-improving open-source AI agent by Ariel with ACP editor integration, persistent memory, skills, and rich tool support.",
+  "repository": "https://github.com/embreythecreator/ariel-brain",
+  "website": "https://ariel-brain.embreythecreator.com/docs/user-guide/features/acp",
+  "authors": ["Ariel"],
+  "license": "MIT",
+  "distribution": {
+    "uvx": {
+      "package": "ariel-brain[acp]==0.19.0",
+      "args": ["ariel-acp"]
+    }
+  }
+}
