@@ -97,78 +97,78 @@ The bootstrap is idempotent — re-running it is fast and skips work that's alre
 
 ## Host setup
 
-### Buzz channels (relay bridge)
+### Plane channels (relay bridge)
 
-[Buzz](https://github.com/block/buzz) is a Nostr-based collaboration platform
-for people and agents. Its `buzz-acp` harness connects Buzz channels to any ACP
+[Plane](https://github.com/block/buzz) is a Nostr-based collaboration platform
+for people and agents. Its `plane-acp` harness connects Plane channels to any ACP
 agent over stdio:
 
 ```text
-Buzz relay <-- WebSocket --> buzz-acp <-- ACP over stdio --> Ariel Brain
+Plane relay <-- WebSocket --> plane-acp <-- ACP over stdio --> Ariel Brain
 ```
 
 This is a transport integration, not a second Ariel installation. The
-subprocess launched by `buzz-acp` uses the same Ariel configuration,
+subprocess launched by `plane-acp` uses the same Ariel configuration,
 credentials, memory, skills, and state as `ariel` on that host.
 
-(This is distinct from [Buzz Desktop's managed runtime](#buzz-desktop), which
-spawns Ariel locally as a preset harness. The relay bridge is for joining Buzz
+(This is distinct from [Plane Desktop's managed runtime](#plane-desktop), which
+spawns Ariel locally as a preset harness. The relay bridge is for joining Plane
 *channels* as an agent identity, typically on a server.)
 
 Prerequisites:
 
 - Complete the ACP installation and `ariel acp --check` above.
-- Build `buzz-acp` and the `buzz` CLI from the
-  [Buzz repository](https://github.com/block/buzz)
-  (`cargo build --release -p buzz-acp`).
-- Mint a dedicated Nostr keypair for Ariel (`buzz-admin generate-key`) and
-  register it as a relay member (`buzz-admin add-member`). Every agent needs
+- Build `plane-acp` and the `plane` CLI from the
+  [Plane repository](https://github.com/block/buzz)
+  (`cargo build --release -p plane-acp`).
+- Mint a dedicated Nostr keypair for Ariel (`plane-admin generate-key`) and
+  register it as a relay member (`plane-admin add-member`). Every agent needs
   its own identity — do not reuse a human keypair.
-- Add that identity to the intended Buzz channels.
+- Add that identity to the intended Plane channels.
 
 Start a bridge with:
 
 ```bash
-export BUZZ_RELAY_URL="wss://community.example.com"
-export BUZZ_PRIVATE_KEY="..."
-export BUZZ_API_TOKEN="..."
-export BUZZ_ACP_AGENT_COMMAND="ariel"
-export BUZZ_ACP_AGENT_ARGS="acp"
+export PLANE_RELAY_URL="wss://community.example.com"
+export PLANE_PRIVATE_KEY="..."
+export PLANE_API_TOKEN="..."
+export PLANE_ACP_AGENT_COMMAND="ariel"
+export PLANE_ACP_AGENT_ARGS="acp"
 
-buzz-acp
+plane-acp
 ```
 
-`BUZZ_API_TOKEN` is needed only when the relay enforces token authentication.
+`PLANE_API_TOKEN` is needed only when the relay enforces token authentication.
 Do not commit or paste the private key or API token.
 
-For a persistent server deployment, run `buzz-acp` under a service manager as
+For a persistent server deployment, run `plane-acp` under a service manager as
 the same operating-system user that owns the intended Ariel home. Setup,
 key generation, channel discovery, and per-agent options are documented in the
-[buzz-acp README](https://github.com/block/buzz/tree/main/crates/buzz-acp).
+[plane-acp README](https://github.com/block/buzz/tree/main/crates/buzz-acp).
 
-The bridge discovers every Buzz channel where the Ariel identity is a member
-and automatically subscribes when it is added to another channel. Buzz channel
+The bridge discovers every Plane channel where the Ariel identity is a member
+and automatically subscribes when it is added to another channel. Plane channel
 membership therefore remains the access boundary; Ariel does not need a
 separate channel list in its own configuration.
 
-To expose Ariel ACP activity in the owner's Buzz Desktop, add:
+To expose Ariel ACP activity in the owner's Plane Desktop, add:
 
 ```bash
-export BUZZ_ACP_RELAY_OBSERVER="true"
+export PLANE_ACP_RELAY_OBSERVER="true"
 ```
 
 This publishes encrypted kind `24200` observer frames addressed to the agent's
-owner (Buzz's NIP-AO). Desktop renders the live lifecycle, tool, response, and
+owner (Plane's NIP-AO). Desktop renders the live lifecycle, tool, response, and
 usage stream in the agent's **Activity log**. The relay treats these frames as
 ephemeral, so Desktop must be online before the turn starts; its local observer
 archive is the durable owner-side history.
 
 Headless bridges answer ACP permission requests themselves because no editor
 is present to show approval dialogs — see
-[Keep Buzz agents owner-only](#keep-buzz-agents-owner-only). Treat the bridge
+[Keep Plane agents owner-only](#keep-plane-agents-owner-only). Treat the bridge
 as privileged automation: use a dedicated operating-system account, restrict
-which Buzz users can prompt the agent (`buzz-acp` supports an owner-only
-respond gate via `BUZZ_ACP_AGENT_OWNER`), and grant membership only in channels
+which Plane users can prompt the agent (`plane-acp` supports an owner-only
+respond gate via `PLANE_ACP_AGENT_OWNER`), and grant membership only in channels
 where Ariel is expected to work.
 
 ### VS Code
@@ -223,10 +223,10 @@ Prerequisites:
 
 Use an ACP-compatible plugin and point it at `ariel acp` or `ariel-acp`.
 
-### Buzz Desktop
+### Plane Desktop
 
-[Buzz](https://github.com/block/buzz) ships Ariel Brain as a preset runtime.
-With Ariel installed the normal way, Buzz discovers it automatically —
+[Plane](https://github.com/block/buzz) ships Ariel Brain as a preset runtime.
+With Ariel installed the normal way, Plane discovers it automatically —
 open **Settings → Runtimes** and Ariel appears under your runtimes.
 
 If discovery fails (older installs), make sure the ACP launcher resolves on a
@@ -238,12 +238,12 @@ command -v ariel-acp || command -v ariel
 
 Recent installs write both `ariel` and `ariel-acp` launchers into
 `~/.local/bin`; running `ariel update` adds the `ariel-acp` launcher to
-older installs. As a manual fallback, configure Buzz's agent command as
+older installs. As a manual fallback, configure Plane's agent command as
 `ariel` with args `["acp"]`.
 
 #### Model picker
 
-Buzz Desktop (v0.5.1+) renders Ariel' full model menu in the agent's runtime
+Plane Desktop (v0.5.1+) renders Ariel' full model menu in the agent's runtime
 settings. The list comes from Ariel itself over ACP: it shows every model
 from providers you have authenticated in Ariel (the same inventory behind
 `ariel model` and the `/model` command), so a model missing from the menu
@@ -254,28 +254,28 @@ Entry IDs take the form `provider:model` (e.g. `openrouter:z-ai/glm-5.1`), or
 `config.yaml`. Picking a model applies to that agent's session; it does not
 change your Ariel-wide default — use `ariel model` for that.
 
-#### Keep Buzz agents owner-only
+#### Keep Plane agents owner-only
 
-Buzz creates every agent with **Who can talk to this agent** set to `Owner only`.
+Plane creates every agent with **Who can talk to this agent** set to `Owner only`.
 Leave it there when the runtime is Ariel.
 
 Two behaviors combine on this path. The `ariel-acp` toolset includes `terminal`
-and `execute_code`, and Buzz's ACP bridge answers Ariel' permission requests
-itself with `allow_once` rather than surfacing them. A Ariel agent in Buzz
+and `execute_code`, and Plane's ACP bridge answers Ariel' permission requests
+itself with `allow_once` rather than surfacing them. A Ariel agent in Plane
 therefore runs shell commands on the host without prompting. I asked one to run
 `rm -rf` against a scratch directory and it deleted it, no prompt anywhere.
 
 Selecting `Anyone` hands that same shell access to every author who can reach
-the channel. Buzz does not warn when you pick it.
+the channel. Plane does not warn when you pick it.
 
 Neither of the obvious mitigations works today:
 
 - `approvals.mode: manual` does make Ariel raise the permission request, but
-  Buzz auto-approves it and the command still runs.
+  Plane auto-approves it and the command still runs.
 - `platform_toolsets.acp` does not narrow the ACP toolset, so it cannot be used
   to drop `terminal`.
 
-`!shutdown` from the owner stops the agent in any mode, and Buzz ignores that
+`!shutdown` from the owner stops the agent in any mode, and Plane ignores that
 command from everyone else.
 
 ## Configuration and credentials
@@ -339,7 +339,7 @@ Dangerous terminal commands can be routed back to the editor as approval prompts
 
 Whether you actually see a prompt is up to the host. A host is free to answer the
 request programmatically instead of showing it to you, in which case these
-options exist on the wire but never reach a human. Buzz Desktop does this, so
+options exist on the wire but never reach a human. Plane Desktop does this, so
 treat that path as unattended execution regardless of your `approvals` setting.
 
 On timeout or error, the approval bridge denies the request.
@@ -392,7 +392,7 @@ or by editing `~/.ariel/.env`. The terminal auth flow (`ariel acp --setup`) can 
 
 ## See also
 
-- [Buzz ACP harness](https://github.com/block/buzz/tree/main/crates/buzz-acp)
+- [Plane ACP harness](https://github.com/block/buzz/tree/main/crates/buzz-acp)
 - [ACP Internals](../../developer-guide/acp-internals.md)
 - [Provider Runtime Resolution](../../developer-guide/provider-runtime.md)
 - [Tools Runtime](../../developer-guide/tools-runtime.md)
